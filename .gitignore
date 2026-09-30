@@ -1,0 +1,27 @@
+# Secrets: mldag-gen copies the W&B key from config.yaml into the generated .dag files
+config.yaml
+.env
+*.dag
+*.dag.*
+
+# HTCondor / DAGMan runtime files
+*.log
+*.out
+*.err
+nodes.dag.status
+
+# Per-run directories (8-char run UUIDs) and job outputs
+/????????/
+output/
+
+# Reports
+*.csv
+/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+recent_*h_summary/
+
+# Python
+.venv/
+__pycache__/
+
+# Local tool settings
+.claude/settings.local.json

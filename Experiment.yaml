@@ -1,0 +1,88 @@
+# TODO The template is currently a bit weird -- there's a mix of DAG VARS
+# ($(varname)) and things filled in at write time ({resource.name})
+# The externalities won't work as currently written, but are here as a placeholder.
+# Is this a place where t-strings can help?? It's such new hotness that I don't
+# know that it's a good requirement.
+# Conceptually the current separation makes sense, since some are dependent on
+# externalities like the target resource, but it needs cleaner definitions.
+name: "Many Protein Pretraining With OSPool Device Constrained runs run2"
+submit_template: |
+  universe = container
+  container_image = osdf:///chtc/staging/iaross/metl_local.sif
+
+  epoch = $(epoch:1)
+
+  request_disk = 60GB
+  request_memory = 20000
+  retry_request_memory = 60000
+  request_cpus = 4
+  request_gpus = 1
+  gpus_minimum_memory = 8000
+  require_gpus = DeviceName == $(device_name)
+
+  +WantGPULab = true
+  +is_resumable = true
+  +JobDurationCategory = "Short"
+  want_ospool = true
+
+  executable = /bin/bash
+  transfer_executable = false
+  arguments = pretrain_local.sh $(epoch) $(run_uuid) $(random_seed) $(protein)
+  preserve_relative_paths = true
+  transfer_input_files = pretrain_local.sh, osdf:///chtc/staging/iaross/metl_rosetta_datasets/processed-$(protein).tar.gz?pack=auto
+  if defined continue_from_checkpoint
+      transfer_input_files = $(transfer_input_files), output/training_logs/$(run_uuid)
+  endif
+  transfer_output_files = output
+  should_transfer_files = YES
+  when_to_transfer_output = ON_EXIT_OR_EVICT
+
+  output = $(run_uuid)/$(epoch)_$(CLUSTERID).out
+  error = $(run_uuid)/$(epoch)_$(CLUSTERID).err
+  stream_output = True
+  stream_error = True
+  log = metl.log
+  priority = $(epoch)
+
+  queue
+post_script: ./sync_and_clean.sh /staging/iaross/single_protein_models_gpu_device_constrained
+
+
+vars:
+  epochs:
+    value: 30
+    type: value
+    description: "Number of epochs to train for"
+  epochs_per_job:
+    value: 1
+    type: value
+    description: "Number of epochs to train in each job"
+  run_number:
+    stop: 1
+    type: range
+    description: "Number of runs to generate"
+  protein:
+    value:
+      - avgfp
+      - dlg4
+      - gb1
+      - grb2
+      - pab1
+      - pten
+      - tem-1
+      - ube4b
+    type: value
+    description: "Protein"
+  device_name:
+    value:
+      - '\"NVIDIA A100-SXM4-40GB\"'
+      - '\"NVIDIA A100-SXM4-80GB\"'
+      - '\"NVIDIA A100-SXM4-80GB MIG 3g.40gb\"'
+      - '\"NVIDIA GeForce GTX 1080 Ti\"'
+      - '\"NVIDIA GeForce RTX 2080 Ti\"'
+      - '\"NVIDIA H100 80GB HBM3\"'
+      - '\"NVIDIA H200\"'
+      - '\"NVIDIA L40\"'
+      - '\"NVIDIA L40S\"'
+    type: value
+    description: "GPU device type to target via require_gpus"

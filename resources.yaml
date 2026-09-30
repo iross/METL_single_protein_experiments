@@ -1,0 +1,10 @@
+default:
+    username: "iaross"
+    queue: ""
+    disk: -1
+    memory: -1
+    gpu_count: -1
+    gpu_memory: -1
+    two_factor_auth: false
+    login_node: ""
+    annex: False

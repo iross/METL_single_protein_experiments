@@ -1,0 +1,12 @@
+[project]
+name = "single-protein-models"
+version = "0.1.0"
+description = "METL single-protein pretraining sweep across GPU device types on HTCondor"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "mldag",
+]
+
+[tool.uv.sources]
+mldag = { git = "https://github.com/iross/MLDAG.git", rev = "v0.1.0rc27" }

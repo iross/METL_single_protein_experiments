@@ -1,0 +1,5 @@
+# Copy to config.yaml (gitignored) and fill in your W&B API key.
+# mldag-gen writes this key into the generated .dag files; keep those out of git too.
+# Remove the wandb section entirely to run without W&B.
+wandb:
+  api_key: YOUR_WANDB_API_KEY
